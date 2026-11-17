@@ -1,0 +1,29 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      YAHWA_ADMIN_PASSWORD: ${YAHWA_ADMIN_PASSWORD:?Set a strong password}
+      SITE_URL: https://${SITE_DOMAIN:?Set your domain}
+      YAHWA_HTTPS: '1'
+      YAHWA_DB_PATH: /data/yahwa.sqlite3
+    volumes:
+      - yahwa_data:/data
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set your domain}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+volumes:
+  yahwa_data:
+  caddy_data:
+  caddy_config:
